@@ -41,11 +41,26 @@ class CustomConverter(Converter):
 converter = CustomConverter()
 
 
+class KryptonParser(Parser):
+    # This method is monkeypatched to allow for "rogue" Examples tables
+    # to be considered "other". The tool will then treat feature examples tables
+    # as part of the feature description.
+    # It isn't the greatest workaround, but it let's us use the tool with pytest-bdd.
+    def match_Other(self, context, token):
+        if token.eof():
+            return False
+        return self.handle_external_error(
+            context, False, token, context.token_matcher.match_Other
+        ) or self.handle_external_error(
+            context, False, token, context.token_matcher.match_ExamplesLine
+        )
+
+
 def parse(content: str) -> GherkinDocument:
     """
     Parse the content of a file to an AST.
     """
-    parser = Parser()
+    parser = KryptonParser()
 
     try:
         parse_result = parser.parse(content)
