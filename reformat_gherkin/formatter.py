@@ -112,6 +112,10 @@ def generate_table_lines(rows: List[TableRow]) -> List[str]:
     """
     Generate lines for table. The columns in a table need to have the same width.
     """
+    # The .replace("C:\\", "C:\\\\") in this function are for a specific issue Krypton
+    # is seeing where escaped characters are not being read and written consistently.
+    # We may need a more generic fix, but this works temporarily.
+
     if not rows:
         return []
 
@@ -122,7 +126,7 @@ def generate_table_lines(rows: List[TableRow]) -> List[str]:
     # Find the max width of a cell in a column, so that every cell in the same column
     # has the same width
     column_widths = [
-        max(len(row[column_index].value) for row in rows)
+        max(len(row[column_index].value.replace("C:\\", "C:\\\\")) for row in rows)
         for column_index in range(n_columns)
     ]
 
@@ -132,7 +136,7 @@ def generate_table_lines(rows: List[TableRow]) -> List[str]:
 
         for column_index in range(n_columns):
             # Left-align the content of each cell, fix the width of the cell
-            content = row[column_index].value
+            content = row[column_index].value.replace("C:\\", "C:\\\\")
             width = column_widths[column_index]
             line += f" {content:<{width}} |"
 
